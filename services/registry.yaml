@@ -230,3 +230,31 @@ services:
       u = Function(V)
       solve(a == L, u)
 
+  ngspice:
+    description: "NGSpice - Open-source SPICE circuit simulator with PySpice bindings"
+    image: ghcr.io/sciagent-ai/ngspice
+    dockerfile: services/ngspice/Dockerfile
+    runtime: python3
+    workdir: /workspace
+    capabilities:
+      - "Analog and digital circuit simulation"
+      - "Transient, AC, and DC analysis"
+      - "SPICE netlist execution"
+      - "Python integration via PySpice"
+      - "Device modeling (BJT, MOSFET, diodes)"
+    example: |
+      from PySpice.Spice.NgSpice.Shared import NgSpiceShared
+      from PySpice.Spice.Parser import SpiceParser
+      from PySpice.Unit import *
+
+      # Simple RC circuit analysis
+      from PySpice.Probe.Plot import plot
+      from PySpice.Spice.Library import SpiceLibrary
+
+      import PySpice.Logging.Logging as Logging
+      logger = Logging.setup_logging()
+
+      from PySpice.Spice.NgSpice.Shared import NgSpiceShared
+      ngspice = NgSpiceShared.new_instance()
+      print("NGSpice ready for circuit simulation")
+
