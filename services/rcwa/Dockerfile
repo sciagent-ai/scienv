@@ -2,7 +2,12 @@
 # Tool only - agent fetches docs on-demand
 FROM ubuntu:22.04
 
+LABEL org.opencontainers.image.source="https://github.com/sciagent-ai/scienv"
+LABEL org.opencontainers.image.description="S4/RCWA electromagnetic simulation environment"
+LABEL org.opencontainers.image.licenses="GPL-2.0"
+
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
