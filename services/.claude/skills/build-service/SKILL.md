@@ -13,10 +13,23 @@ When the user asks to build a new service package, follow these steps in order:
 - Check if `services/{package}/Dockerfile` already exists
 - Look at existing Dockerfiles (e.g., `services/meep/Dockerfile`) for patterns
 
-## 2. Create Package Files
+## 2. Research Official Sources
+
+**Use web search to find official installation instructions.** Scientific software often has specific requirements that aren't obvious.
+
+Look up:
+- **Official installation docs** - pip, conda, or source build?
+- **Recommended base image** - some packages have official Docker images (e.g., OpenFOAM, FEniCS)
+- **System dependencies** - many scientific packages need specific libraries (BLAS, MPI, etc.)
+- **License** - needed for the Dockerfile label and registry entry
+- **Known issues** - version conflicts, deprecated methods, architecture gotchas
+
+This step prevents trial-and-error builds and ensures we use the recommended approach.
+
+## 3. Create Package Files
 
 ### Dockerfile
-Create `services/{package}/Dockerfile` following this pattern:
+Create `services/{package}/Dockerfile` (or `{package}/Dockerfile` for new packages) following this pattern:
 - Use appropriate base image (conda for complex deps, python:slim for simple)
 - Add LABEL for org.opencontainers.image.source, description, licenses
 - Set PYTHONUNBUFFERED=1
@@ -37,7 +50,7 @@ __pycache__
 .DS_Store
 ```
 
-## 3. Update Registry (if needed)
+## 4. Update Registry (if needed)
 
 If the package is not in `registry.yaml`, add an entry following the existing format:
 ```yaml
@@ -45,6 +58,7 @@ If the package is not in `registry.yaml`, add an entry following the existing fo
     description: "Brief description"
     image: ghcr.io/sciagent-ai/package-name
     dockerfile: services/package-name/Dockerfile
+    license: MIT  # or GPL-3.0, BSD-3-Clause, Apache-2.0, LGPL-2.1, etc.
     runtime: python3  # or bash
     workdir: /workspace
     capabilities:
@@ -54,7 +68,14 @@ If the package is not in `registry.yaml`, add an entry following the existing fo
       # Example usage code
 ```
 
-## 4. Build, Push, and Verify
+**Note:** The `license` field should match the SPDX identifier used in the Dockerfile label.
+
+## 5. Build, Push, and Verify
+
+**Architecture Note:** Images are built for the host machine's architecture only. If building on Apple Silicon (ARM64), the image will only run natively on ARM64 systems. Intel/AMD users would need emulation (slow) or a separate build. For multi-arch support in the future, use:
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/sciagent-ai/{package}:latest --push .
+```
 
 Execute these steps in order, using the TodoWrite tool to track progress:
 
@@ -88,7 +109,7 @@ Execute these steps in order, using the TodoWrite tool to track progress:
    docker rmi ghcr.io/sciagent-ai/{package}:latest
    ```
 
-## 5. Report Results
+## 6. Report Results
 
 Summarize:
 - Image location: `ghcr.io/sciagent-ai/{package}:latest`

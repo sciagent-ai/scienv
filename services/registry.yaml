@@ -385,3 +385,46 @@ services:
 
       # 4. Post-process results (VTU files) with ParaView
 
+  openroad:
+    description: "OpenROAD - Open-source RTL-to-GDS digital design flow"
+    image: ghcr.io/sciagent-ai/openroad
+    dockerfile: services/openroad/Dockerfile
+    license: BSD-3-Clause
+    runtime: bash
+    workdir: /workspace
+    capabilities:
+      - "RTL synthesis (Yosys)"
+      - "Floorplanning and macro placement"
+      - "Global and detailed placement"
+      - "Clock tree synthesis"
+      - "Global and detailed routing"
+      - "Static timing analysis"
+      - "Design rule checking"
+      - "Power analysis and optimization"
+    example: |
+      # OpenROAD TCL workflow example
+      # 1. Read design files
+      read_lef tech.lef
+      read_def design.def
+
+      # 2. Initialize floorplan
+      initialize_floorplan -die_area "0 0 100 100" -core_area "10 10 90 90"
+
+      # 3. Run global placement
+      global_placement
+
+      # 4. Run detailed placement
+      detailed_placement
+
+      # 5. Clock tree synthesis
+      clock_tree_synthesis
+
+      # 6. Global routing
+      global_route
+
+      # 7. Detailed routing
+      detailed_route
+
+      # 8. Write output
+      write_def output.def
+
