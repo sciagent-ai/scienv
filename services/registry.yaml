@@ -428,3 +428,42 @@ services:
       # 8. Write output
       write_def output.def
 
+  sciml-julia:
+    description: "Julia SciML ecosystem - differential equations, optimization, and scientific machine learning"
+    image: ghcr.io/sciagent-ai/sciml-julia
+    dockerfile: services/sciml-julia/Dockerfile
+    license: MIT
+    runtime: julia
+    workdir: /workspace
+    capabilities:
+      - "ODE, SDE, DDE, DAE solving (DifferentialEquations.jl)"
+      - "Symbolic modeling and simulation (ModelingToolkit.jl)"
+      - "Optimization and parameter estimation (Optimization.jl)"
+      - "Nonlinear equation solving (NonlinearSolve.jl)"
+      - "Chemical reaction network modeling (Catalyst.jl)"
+      - "Scientific visualization (Plots.jl)"
+      - "Automatic differentiation and sensitivity analysis"
+      - "Neural differential equations"
+    example: |
+      using DifferentialEquations, Plots
+
+      # Define the Lorenz system
+      function lorenz!(du, u, p, t)
+          σ, ρ, β = p
+          du[1] = σ * (u[2] - u[1])
+          du[2] = u[1] * (ρ - u[3]) - u[2]
+          du[3] = u[1] * u[2] - β * u[3]
+      end
+
+      # Initial conditions and parameters
+      u0 = [1.0, 0.0, 0.0]
+      p = (10.0, 28.0, 8/3)
+      tspan = (0.0, 100.0)
+
+      # Solve the ODE
+      prob = ODEProblem(lorenz!, u0, tspan, p)
+      sol = solve(prob)
+
+      # Plot the solution
+      plot(sol, idxs=(1, 2, 3), title="Lorenz Attractor")
+
