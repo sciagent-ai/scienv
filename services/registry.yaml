@@ -537,6 +537,39 @@ services:
       print(f"Clustering coefficient: {nx.average_clustering(G):.3f}")
       print(f"Density: {nx.density(G):.3f}")
 
+  blast:
+    description: "NCBI BLAST+ - Basic Local Alignment Search Tool for sequence similarity searching"
+    image: ghcr.io/sciagent-ai/blast
+    dockerfile: services/blast/Dockerfile
+    license: Unlicense
+    runtime: bash
+    workdir: /workspace
+    capabilities:
+      - "Nucleotide-nucleotide BLAST (blastn)"
+      - "Protein-protein BLAST (blastp)"
+      - "Translated BLAST (blastx, tblastn, tblastx)"
+      - "PSI-BLAST and PHI-BLAST for profile searches"
+      - "BLAST database creation and management"
+      - "Result parsing with Biopython"
+      - "Sequence similarity and homology detection"
+    example: |
+      # Create a BLAST database from FASTA file
+      makeblastdb -in sequences.fasta -dbtype nucl -out mydb
+
+      # Search nucleotide sequences
+      blastn -query query.fasta -db mydb -out results.txt -outfmt 6
+
+      # Search protein sequences
+      blastp -query protein.fasta -db nr -out results.xml -outfmt 5
+
+      # Parse results with Biopython
+      from Bio.Blast import NCBIXML
+      with open("results.xml") as f:
+          records = NCBIXML.parse(f)
+          for record in records:
+              for alignment in record.alignments:
+                  print(f"Hit: {alignment.title}")
+
   sciml-julia:
     description: "Julia SciML ecosystem - differential equations, optimization, and scientific machine learning"
     image: ghcr.io/sciagent-ai/sciml-julia
