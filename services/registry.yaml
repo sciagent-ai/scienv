@@ -398,9 +398,9 @@ services:
       # 4. Post-process results (VTU files) with ParaView
 
   openroad:
-    description: "OpenROAD - Open-source RTL-to-GDS digital design flow"
+    description: "OpenROAD - RTL-to-GDS flow with ASAP7, SKY130, GF180, IHP-SG13G2 PDKs"
     image: ghcr.io/sciagent-ai/openroad
-    dockerfile: services/openroad/Dockerfile
+    dockerfile: openroad/Dockerfile
     license: BSD-3-Clause
     runtime: bash
     workdir: /workspace
@@ -413,31 +413,26 @@ services:
       - "Static timing analysis"
       - "Design rule checking"
       - "Power analysis and optimization"
+      - "ASAP7 7nm predictive PDK"
+      - "SKY130 130nm PDK"
+      - "GF180 180nm PDK"
+      - "IHP-SG13G2 130nm SiGe BiCMOS PDK"
     example: |
-      # OpenROAD TCL workflow example
-      # 1. Read design files
+      # Available platforms: asap7, sky130hd, sky130hs, gf180, ihp-sg13g2, nangate45
+
+      # Run ASAP7 flow with OpenROAD-flow-scripts:
+      cd /OpenROAD-flow-scripts/flow
+      make DESIGN_CONFIG=designs/asap7/minimal/config.mk
+
+      # Or use OpenROAD TCL directly:
       read_lef tech.lef
       read_def design.def
-
-      # 2. Initialize floorplan
       initialize_floorplan -die_area "0 0 100 100" -core_area "10 10 90 90"
-
-      # 3. Run global placement
       global_placement
-
-      # 4. Run detailed placement
       detailed_placement
-
-      # 5. Clock tree synthesis
       clock_tree_synthesis
-
-      # 6. Global routing
       global_route
-
-      # 7. Detailed routing
       detailed_route
-
-      # 8. Write output
       write_def output.def
 
   biopython:
@@ -651,41 +646,6 @@ services:
 
       # Visualize optimization history
       # optuna.visualization.plot_optimization_history(study)
-
-  asap7:
-    description: "ASAP7 - Arizona State 7nm FinFET Predictive PDK with OpenROAD flow"
-    image: ghcr.io/sciagent-ai/asap7
-    dockerfile: services/asap7/Dockerfile
-    license: BSD-3-Clause
-    runtime: bash
-    workdir: /workspace
-    capabilities:
-      - "7nm FinFET predictive process design kit"
-      - "Standard cell libraries (7.5-track and 6-track)"
-      - "SRAM compiler for memory generation"
-      - "RTL-to-GDS flow with OpenROAD"
-      - "Synthesis with Yosys"
-      - "Place and route with OpenROAD"
-      - "Static timing analysis"
-      - "Design rule checking support"
-    example: |
-      # ASAP7 PDK paths are set via environment variables:
-      # ASAP7_PDK_PATH - Core PDK files
-      # ASAP7_SC7P5T_PATH - 7.5-track standard cell library
-      # ASAP7_SC6T_PATH - 6-track standard cell library
-      # ASAP7_SRAM_PATH - SRAM compiler
-
-      # Example OpenROAD TCL flow with ASAP7
-      read_lef $env(ASAP7_SC7P5T_PATH)/techlef/asap7_tech_4x_201209.lef
-      read_lef $env(ASAP7_SC7P5T_PATH)/LEF/asap7sc7p5t_28_R_4x_220121a.lef
-      read_liberty $env(ASAP7_SC7P5T_PATH)/LIB/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib
-
-      # Synthesize with Yosys
-      # yosys -p "read_verilog design.v; synth -top top; write_verilog synth.v"
-
-      # Run OpenROAD flow
-      # openroad -gui  # Launch GUI
-      # openroad script.tcl  # Run TCL script
 
   iic-osic-tools:
     description: "IIC-OSIC-TOOLS - All-in-one open-source IC design environment with 80+ EDA tools"
