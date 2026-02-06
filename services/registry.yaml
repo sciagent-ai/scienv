@@ -5,6 +5,18 @@
 # 1. Check local Docker images
 # 2. Pull from GHCR (ghcr.io/sciagent-ai/{name}:latest)
 # 3. Build from Dockerfile (services/{name}/Dockerfile)
+#
+# Execution pattern:
+#   docker run --rm -v <local_path>:/workspace <image> <runtime> /workspace/<script>
+#
+# Runtime conventions:
+#   python3 → python3 /workspace/script.py
+#   bash    → bash /workspace/script.sh  OR  bash -c "<commands>"
+#   julia   → julia /workspace/script.jl
+#
+# Special cases: If 'invoke' field is present, use it instead of runtime.
+#   Example: invoke: "--skip bash -c {cmd}" means run:
+#   docker run --rm -v <local_path>:/workspace <image> --skip bash -c "<commands>"
 
 defaults:
   organization: sciagent-ai
@@ -639,6 +651,80 @@ services:
 
       # Visualize optimization history
       # optuna.visualization.plot_optimization_history(study)
+
+  asap7:
+    description: "ASAP7 - Arizona State 7nm FinFET Predictive PDK with OpenROAD flow"
+    image: ghcr.io/sciagent-ai/asap7
+    dockerfile: services/asap7/Dockerfile
+    license: BSD-3-Clause
+    runtime: bash
+    workdir: /workspace
+    capabilities:
+      - "7nm FinFET predictive process design kit"
+      - "Standard cell libraries (7.5-track and 6-track)"
+      - "SRAM compiler for memory generation"
+      - "RTL-to-GDS flow with OpenROAD"
+      - "Synthesis with Yosys"
+      - "Place and route with OpenROAD"
+      - "Static timing analysis"
+      - "Design rule checking support"
+    example: |
+      # ASAP7 PDK paths are set via environment variables:
+      # ASAP7_PDK_PATH - Core PDK files
+      # ASAP7_SC7P5T_PATH - 7.5-track standard cell library
+      # ASAP7_SC6T_PATH - 6-track standard cell library
+      # ASAP7_SRAM_PATH - SRAM compiler
+
+      # Example OpenROAD TCL flow with ASAP7
+      read_lef $env(ASAP7_SC7P5T_PATH)/techlef/asap7_tech_4x_201209.lef
+      read_lef $env(ASAP7_SC7P5T_PATH)/LEF/asap7sc7p5t_28_R_4x_220121a.lef
+      read_liberty $env(ASAP7_SC7P5T_PATH)/LIB/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib
+
+      # Synthesize with Yosys
+      # yosys -p "read_verilog design.v; synth -top top; write_verilog synth.v"
+
+      # Run OpenROAD flow
+      # openroad -gui  # Launch GUI
+      # openroad script.tcl  # Run TCL script
+
+  iic-osic-tools:
+    description: "IIC-OSIC-TOOLS - All-in-one open-source IC design environment with 80+ EDA tools"
+    image: ghcr.io/sciagent-ai/iic-osic-tools
+    dockerfile: services/iic-osic-tools/Dockerfile
+    license: Apache-2.0
+    runtime: bash
+    invoke: "--skip bash -c {cmd}"
+    workdir: /workspace
+    capabilities:
+      - "SPICE simulation (ngspice)"
+      - "Layout editing and DRC (Magic, KLayout)"
+      - "Schematic capture (xschem)"
+      - "RTL synthesis (Yosys)"
+      - "Digital place and route (OpenROAD)"
+      - "Verilog simulation (Verilator, Icarus)"
+      - "VHDL simulation (GHDL)"
+      - "Verification (cocotb)"
+      - "SKY130 PDK support"
+      - "GF180MCU PDK support"
+      - "IHP-SG13G2 PDK support"
+    example: |
+      # Switch PDK (sky130A, gf180mcuD, ihp-sg13g2)
+      sak-pdk sky130A
+
+      # Run SPICE simulation
+      ngspice -b circuit.spice
+
+      # View/edit layout with Magic
+      magic -T sky130A layout.mag
+
+      # Schematic capture with xschem
+      xschem schematic.sch
+
+      # Run synthesis with Yosys
+      yosys -p "read_verilog design.v; synth_sky130; write_verilog synth.v"
+
+      # Layout viewing with KLayout
+      klayout -e design.gds
 
   sciml-julia:
     description: "Julia SciML ecosystem - differential equations, optimization, and scientific machine learning"
