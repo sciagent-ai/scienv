@@ -647,6 +647,60 @@ services:
       # Visualize optimization history
       # optuna.visualization.plot_optimization_history(study)
 
+  dwsim:
+    description: "DWSIM - Open-source chemical process simulator for steady-state and dynamic modeling"
+    image: ghcr.io/sciagent-ai/dwsim
+    dockerfile: services/dwsim/Dockerfile
+    license: GPL-3.0
+    runtime: python3
+    workdir: /workspace
+    capabilities:
+      - "Steady-state and dynamic process simulation"
+      - "Thermodynamic property calculations (NRTL, UNIQUAC, Peng-Robinson, SRK, etc.)"
+      - "Unit operations (heaters, coolers, pumps, compressors, valves)"
+      - "Separation processes (distillation, absorption, flash drums)"
+      - "Chemical reactors (conversion, equilibrium, Gibbs, CSTR, PFR)"
+      - "Heat exchangers and energy integration"
+      - "Python automation via pythonnet"
+      - "CAPE-OPEN compliant thermodynamic packages"
+    example: |
+      from init_dwsim import create_flowsheet, calculate_flowsheet, save_flowsheet
+      from init_dwsim import ObjectType, PropertyPackages
+
+      # Create new flowsheet
+      manager, sim = create_flowsheet()
+
+      # Add water compound
+      water = sim.AvailableCompounds["Water"]
+      sim.SelectedCompounds.Add(water.Name, water)
+
+      # Add property package (Steam Tables)
+      stables = PropertyPackages.SteamTablesPropertyPackage()
+      sim.AddPropertyPackage(stables)
+
+      # Create streams and heater
+      inlet = sim.AddObject(ObjectType.MaterialStream, 50, 50, "inlet").GetAsObject()
+      outlet = sim.AddObject(ObjectType.MaterialStream, 200, 50, "outlet").GetAsObject()
+      heater = sim.AddObject(ObjectType.Heater, 125, 50, "heater").GetAsObject()
+
+      # Connect objects
+      sim.ConnectObjects(inlet.GraphicObject, heater.GraphicObject, -1, -1)
+      sim.ConnectObjects(heater.GraphicObject, outlet.GraphicObject, -1, -1)
+
+      # Set inlet conditions
+      inlet.SetTemperature(300.0)  # K
+      inlet.SetPressure(101325.0)  # Pa
+      inlet.SetMassFlow(1.0)  # kg/s
+
+      # Configure heater
+      from DWSIM.UnitOperations import UnitOperations
+      heater.CalcMode = UnitOperations.Heater.CalculationMode.OutletTemperature
+      heater.OutletTemperature = 373.15  # K (100 C)
+
+      # Solve
+      errors = calculate_flowsheet(manager, sim)
+      print(f"Heater duty: {heater.DeltaQ:.2f} kW")
+
   iic-osic-tools:
     description: "IIC-OSIC-TOOLS - All-in-one open-source IC design environment with 80+ EDA tools"
     image: ghcr.io/sciagent-ai/iic-osic-tools
