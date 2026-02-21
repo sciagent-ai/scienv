@@ -98,7 +98,7 @@ services:
       - h5py
       - netcdf4
       - xarray
-    extends: null  # TODO Phase 2: change to scipy-base after Dockerfile rebuild
+    extends: scipy-base
     capabilities:
       - "Numerical computing (numpy, scipy)"
       - "Data analysis (pandas, statsmodels)"
@@ -590,7 +590,7 @@ services:
       - networkx
       - scikit-learn
       - h5py
-    extends: null  # TODO Phase 2: change to sci-core after Dockerfile rebuild
+    extends: sci-core
     capabilities:
       - "DNA/RNA/protein sequence manipulation and analysis"
       - "Sequence file parsing (FASTA, GenBank, FASTQ, etc.)"
@@ -628,7 +628,7 @@ services:
       - qiskit
       - qiskit-aer
       - numpy
-    extends: null  # TODO Phase 2: change to sci-core after Dockerfile rebuild
+    extends: sci-core
     capabilities:
       - "Quantum circuit construction and manipulation"
       - "Quantum gate operations (Hadamard, CNOT, Pauli, etc.)"
