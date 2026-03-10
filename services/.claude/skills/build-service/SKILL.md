@@ -61,6 +61,11 @@ If the package is not in `registry.yaml`, add an entry following the existing fo
     license: MIT  # or GPL-3.0, BSD-3-Clause, Apache-2.0, LGPL-2.1, etc.
     runtime: python3  # or bash
     workdir: /workspace
+    packages:  # List key importable packages (for Python services)
+      - main-package
+      - numpy
+      - scipy
+    extends: null  # or parent service name (scipy-base, sci-core, openfoam, etc.)
     capabilities:
       - "Capability 1"
       - "Capability 2"
@@ -68,7 +73,10 @@ If the package is not in `registry.yaml`, add an entry following the existing fo
       # Example usage code
 ```
 
-**Note:** The `license` field should match the SPDX identifier used in the Dockerfile label.
+**Registry field notes:**
+- `license`: Must match the SPDX identifier in the Dockerfile label
+- `packages`: List importable packages for service discovery (Python services only)
+- `extends`: Set to parent service name if this extends another service (e.g., `scipy-base`, `sci-core`, `openfoam`), or `null` if standalone
 
 ## 5. Build, Push, and Verify
 
@@ -104,7 +112,14 @@ Execute these steps in order, using the TodoWrite tool to track progress:
    docker run --rm ghcr.io/sciagent-ai/{package}:latest <verification-command>
    ```
 
-6. **Cleanup** (optional):
+6. **Make package public on GHCR**:
+   ```bash
+   gh api --method PATCH /user/packages/container/{package}/visibility -f visibility=public
+   ```
+
+   **Note:** The `org.opencontainers.image.source` label in the Dockerfile links the package to the GitHub repo, which is required for public visibility. If the `gh` command fails, the user may need to manually set visibility in GitHub: Settings → Packages → {package} → Package settings → Change visibility.
+
+7. **Cleanup** (optional):
    ```bash
    docker rmi ghcr.io/sciagent-ai/{package}:latest
    ```
