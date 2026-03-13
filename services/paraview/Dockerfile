@@ -35,7 +35,7 @@ RUN wget -q "https://www.paraview.org/files/v5.13/ParaView-${PARAVIEW_VERSION}-o
 
 # Set up environment
 ENV PATH="/opt/paraview/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/paraview/lib:${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/opt/paraview/lib/mesa:/opt/paraview/lib:${LD_LIBRARY_PATH}"
 ENV PYTHONPATH="/opt/paraview/lib/python3.10/site-packages:${PYTHONPATH}"
 
 # Create workspace
